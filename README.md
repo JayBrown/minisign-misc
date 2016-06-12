@@ -7,6 +7,8 @@
 # Minisign miscellanea <img src="https://github.com/JayBrown/minisign-misc/blob/master/img/jb-img.png" height="20px"/>
 **Scripts and OS X workflows to verify and sign files with minisign**
 
+![ms-sign-screengrab](https://github.com/JayBrown/minisign-misc/blob/master/img/minisign-sign-grab.png)
+
 ![ms-verify-screengrab](https://github.com/JayBrown/minisign-misc/blob/master/img/minisign-verify-grab.png)
 
 ## Prerequisites
@@ -18,8 +20,7 @@ Install using [Homebrew](http://brew.sh) with `brew install <software-name>` (or
 You need to have Spotlight enabled for `mdfind` to locate the terminal-notifier.app on your volume; if you don't install terminal-notifier, or if you have deactivated Spotlight, the minisign scripts will call notifications via AppleScript instead
 
 ## Installation & Usage
-* [Download the DMG](https://github.com/JayBrown/minisign-misc/releases) and open
-* Note: workflow files will be added later
+* [Download the latest DMG](https://github.com/JayBrown/minisign-misc/releases) and open
 
 ### Workflows
 * Double-click on the workflow files to install
@@ -32,5 +33,4 @@ You need to have Spotlight enabled for `mdfind` to locate the terminal-notifier.
 * Run the scripts with `minisign-verify.sh /path/to/your/file` and `minisign-sign.sh /path/to/your/file`
 
 ## General Notes
-* Currently only the minisign-verify script is finished
-* My minisign public key for the releases on Github will be created in `${HOME}/Documents/minisign`
+* My own minisign public key for releases on Github will be created in `${HOME}/Documents/minisign`

@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# minisign-verify v1.0 (shell script version)
+# minisign-verify v1.1 (shell script version)
 
 LANG=en_US.UTF-8
 export PATH=/usr/local/bin:$PATH
@@ -238,7 +238,7 @@ fi
 # checksums
 CHECKSUM21=$(/usr/bin/shasum -a 256 "$VER_FILE" | /usr/bin/awk '{print $1}')
 
-# additional checksums (optional); uncomment if needed, then extend $INFO_TXT
+# additional checksums (optional); uncomment if needed, then extend $INFO_TXT and $CLIPBOARD_TXT
 # CHECKSUM5=$(/sbin/md5 -q "$VER_FILE")
 # CHECKSUM1=$(/usr/bin/shasum -a 1 "$VER_FILE" | /usr/bin/awk '{print $1}')
 # CHECKSUM22=$(/usr/bin/shasum -a 512 "$VER_FILE" | /usr/bin/awk '{print $1}')
@@ -270,8 +270,13 @@ $MS_OUT
 
 This information has also been copied to your clipboard"
 
+CLIPBOARD_TXT="File: $TARGET_NAME
+Size: $SIZE MB
+Hash (SHA-2, 256 bit): $CHECKSUM21
+Minisign output: $MS_OUT"
+
 # send info to clipboard
-echo "$INFO_TXT" | /usr/bin/pbcopy
+echo "$CLIPBOARD_TXT" | /usr/bin/pbcopy
 
 # info window
 INFO=$(/usr/bin/osascript << EOT

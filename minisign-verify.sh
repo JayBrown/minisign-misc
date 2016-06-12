@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# minisign-verify v1.2 (shell script version)
+# minisign-verify v1.3 (shell script version)
 
 LANG=en_US.UTF-8
 export PATH=/usr/local/bin:$PATH
@@ -119,7 +119,7 @@ METHOD_ALL=$(/usr/bin/osascript << EOT
 tell application "System Events"
 	activate
 	set theLogoPath to ((path to library folder from user domain) as text) & "Caches:local.lcars.minisign:lcars.png"
-	set {theButton, theReply} to {button returned, text returned} of (display dialog "Enter the minisign public key or select a local public key (.pub) file." ¬
+	set {theButton, theReply} to {button returned, text returned} of (display dialog "Enter a minisign public key or select a local public key (.pub) file." ¬
 		default answer "" ¬
 		buttons {"Cancel", "Select Key File", "Enter"} ¬
 		default button 3 ¬
@@ -235,6 +235,17 @@ if [[ $(echo "$MS_OUT" | /usr/bin/grep "Signature and comment signature verified
 	exit
 fi
 
+# parse comments
+UNTRUSTED_COMMENT=$(/usr/bin/sed -n '1p' "$MINISIG_LOC" | /usr/bin/awk '/untrusted comment/ {print substr($0, index($0,$3))}')
+TRUSTED_COMMENT=$(echo "$MS_OUT" | /usr/bin/awk '/Trusted comment/ {print substr($0, index($0,$3))}')
+if [[ "$UNTRUSTED_COMMENT" == "" ]] ; then
+	UNTRUSTED_COMMENT="n/a"
+fi
+if [[ "$TRUSTED_COMMENT" == "" ]] ; then
+	TRUSTED_COMMENT="n/a"
+fi
+MS_OUT_INFO=$(echo "$MS_OUT" | /usr/bin/sed -n '1p')
+
 # checksums
 CHECKSUM21=$(/usr/bin/shasum -a 256 "$VER_FILE" | /usr/bin/awk '{print $1}')
 
@@ -265,15 +276,23 @@ $SIZE MB
 ■︎■■ Hash (SHA-2, 256 bit) ■■■
 $CHECKSUM21
 
+■︎■■ Untrusted minisign comment ■︎■■
+$UNTRUSTED_COMMENT
+
+■︎■■ Trusted minisign comment ■︎■■
+$TRUSTED_COMMENT
+
 ■︎■■ Minisign output ■■■
-$MS_OUT
+$MS_OUT_INFO
 
 This information has also been copied to your clipboard"
 
 CLIPBOARD_TXT="File: $TARGET_NAME
 Size: $SIZE MB
 Hash (SHA-2, 256 bit): $CHECKSUM21
-Minisign output: $MS_OUT"
+Untrusted minisign comment: $UNTRUSTED_COMMENT
+Trusted minisign comment: $TRUSTED_COMMENT
+Minisign output: $MS_OUT_INFO"
 
 # send info to clipboard
 echo "$CLIPBOARD_TXT" | /usr/bin/pbcopy

@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# minisign-sign v1.2 (shell script version)
+# minisign-sign v1.3 (shell script version)
 
 LANG=en_US.UTF-8
 export PATH=/usr/local/bin:$PATH
@@ -106,14 +106,14 @@ tell application "System Events"
 	activate
 	set theLogoPath to ((path to library folder from user domain) as text) & "Caches:local.lcars.minisign:lcars.png"
 	set theButton to button returned of (display dialog "Do you want to create a new key pair or sign your file(s) with an existing key?" ¬
-		buttons {"Cancel", "New", "Select Key"} ¬
+		buttons {"Cancel", "New", "Select Key File"} ¬
 		default button 3 ¬
 		with title "Choose Method" ¬
 		with icon file theLogoPath ¬
 		giving up after 180)
 	if theButton = "New" then
 		set theButton to "new"
-	else if theButton = "Select Key" then
+	else if theButton = "Select Key File" then
 		set theButton to "key"
 	end if
 end tell
@@ -241,6 +241,44 @@ EOT)
 	fi
 fi
 
+# enter trusted comment
+TRUSTED=$(/usr/bin/osascript << EOT
+tell application "System Events"
+	activate
+	set theLogoPath to ((path to library folder from user domain) as text) & "Caches:local.lcars.minisign:lcars.png"
+	set theComment to text returned of (display dialog "Enter a one-line trusted comment for your signature file. Leave blank to skip." ¬
+		default answer "" ¬
+		buttons {"Cancel", "Enter"} ¬
+		default button 2 ¬
+		with title "Enter Trusted Comment" ¬
+		with icon file theLogoPath ¬
+		giving up after 180)
+end tell
+theComment
+EOT)
+if [[ "$TRUSTED" == "false" ]] ; then
+	exit
+fi
+
+# enter untrusted comment
+UNTRUSTED=$(/usr/bin/osascript << EOT
+tell application "System Events"
+	activate
+	set theLogoPath to ((path to library folder from user domain) as text) & "Caches:local.lcars.minisign:lcars.png"
+	set theComment to text returned of (display dialog "Enter a one-line untrusted comment for your signature file. Leave blank to skip." ¬
+		default answer "" ¬
+		buttons {"Cancel", "Enter"} ¬
+		default button 2 ¬
+		with title "Enter Untrusted Comment" ¬
+		with icon file theLogoPath ¬
+		giving up after 180)
+end tell
+theComment
+EOT)
+if [[ "$UNTRUSTED" == "false" ]] ; then
+	exit
+fi
+
 # read public key
 PUBKEY=$(/usr/bin/sed -n '2p' "$PUBKEY_LOC" | xargs)
 
@@ -261,9 +299,9 @@ fi
 
 # sign target file
 if [[ "$PREHASH" == "true" ]] ; then
-	MS_OUT=$(echo "$KEYPAIR_PW" | /usr/local/bin/minisign -S -H -x "$MINISIG_LOC" -s "$SIGNING_KEY" -m "$SIGN_FILE")
+	MS_OUT=$(echo "$KEYPAIR_PW" | /usr/local/bin/minisign -S -H -x "$MINISIG_LOC" -s "$SIGNING_KEY" -c "$UNTRUSTED" -t "$TRUSTED" -m "$SIGN_FILE")
 elif [[ "$PREHASH" == "false" ]] ; then
-	MS_OUT=$(echo "$KEYPAIR_PW" | /usr/local/bin/minisign -S -x "$MINISIG_LOC" -s "$SIGNING_KEY" -m "$SIGN_FILE")
+	MS_OUT=$(echo "$KEYPAIR_PW" | /usr/local/bin/minisign -S -x "$MINISIG_LOC" -s "$SIGNING_KEY" -c "$UNTRUSTED" -t "$TRUSTED" -m "$SIGN_FILE")
 fi
 if [[ $(echo "$MS_OUT" | /usr/bin/grep "Wrong password for that key") != "" ]] ; then
 	notify "Signing error" "Wrong password"

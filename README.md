@@ -36,4 +36,5 @@ You need to have Spotlight enabled for `mdfind` to locate the terminal-notifier.
 * My own minisign public key for releases on Github will be created in `${HOME}/Documents/minisign`
 
 ## To-do
-* Add comments to signature files
+* sign: add trusted & untrusted comments with skip option (leave blank)
+* verify: parse output incl. reading of trusted & untrusted comments

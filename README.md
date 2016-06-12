@@ -29,7 +29,7 @@ You need to have Spotlight enabled for `mdfind` to locate the terminal-notifier.
 ### Shell scripts
 * Move the scripts to `/usr/local/bin`
 * In your shell enter `chmod +x /usr/local/bin/minisign-verify.sh` and `chmod +x /usr/local/bin/minisign-sign.sh`
-* Run the scripts with `minisign-verify.sh /path/to/your/file` and `minisign-sign.sh /path/to/your/file
+* Run the scripts with `minisign-verify.sh /path/to/your/file` and `minisign-sign.sh /path/to/your/file`
 
 ## General Notes
 * Currently only the minisign-verify script is finished

@@ -15,7 +15,7 @@ Install using [Homebrew](http://brew.sh) with `brew install <software-name>` (or
 * [minisign](https://github.com/jedisct1/minisign)
 * [terminal-notifier](https://github.com/alloy/terminal-notifier)
 
-You need to have Spotlight enabled for `mdfind` to locate the terminal-notifier.app on your volume; if you don't install terminal-notifier, or if you have deactivated Spotlight, VBBar will call notifications via AppleScript instead
+You need to have Spotlight enabled for `mdfind` to locate the terminal-notifier.app on your volume; if you don't install terminal-notifier, or if you have deactivated Spotlight, the minisign scripts will call notifications via AppleScript instead
 
 ## Installation & Usage
 * [Download the DMG](https://github.com/JayBrown/minisign-misc/releases) and open

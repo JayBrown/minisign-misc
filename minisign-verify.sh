@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# minisign-verify v1.1 (shell script version)
+# minisign-verify v1.2 (shell script version)
 
 LANG=en_US.UTF-8
 export PATH=/usr/local/bin:$PATH
@@ -166,7 +166,7 @@ EOT)
 	CHOICE_DIR=$(/usr/bin/dirname "$PUBKEY_CHOICE")
 	CHOICE_BASENAME=$(/usr/bin/basename "$PUBKEY_CHOICE")
 	if [[ "$CHOICE_DIR" != "$SIGS_DIR" ]] ; then
-		/bin/mv "$PUBKEY_CHOICE" "$SIGS_DIR/$CHOICE_BASENAME"
+		cp "$PUBKEY_CHOICE" "$SIGS_DIR/$CHOICE_BASENAME"
 	fi
 	PUBKEY_LOC="$SIGS_DIR/$CHOICE_BASENAME"
 elif [[ "$METHOD" == "key" ]] ; then
@@ -244,8 +244,8 @@ CHECKSUM21=$(/usr/bin/shasum -a 256 "$VER_FILE" | /usr/bin/awk '{print $1}')
 # CHECKSUM22=$(/usr/bin/shasum -a 512 "$VER_FILE" | /usr/bin/awk '{print $1}')
 
 # file size
-BYTES=$(stat -f%z "$VER_FILE")
-MEGABYTES=$(bc -l <<< "scale=6; $BYTES/1000000")
+BYTES=$(/usr/bin/stat -f%z "$VER_FILE")
+MEGABYTES=$(/usr/bin/bc -l <<< "scale=6; $BYTES/1000000")
 if [[ ($MEGABYTES<1) ]] ; then
 	SIZE="0$MEGABYTES"
 else

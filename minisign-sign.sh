@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# minisign-sign v1.1 (shell script version)
+# minisign-sign v1.2 (shell script version)
 
 LANG=en_US.UTF-8
 export PATH=/usr/local/bin:$PATH
@@ -245,17 +245,18 @@ fi
 PUBKEY=$(/usr/bin/sed -n '2p' "$PUBKEY_LOC" | xargs)
 
 # target file size
-BYTES=$(stat -f%z "$SIGN_FILE")
-MEGABYTES=$(bc -l <<< "scale=6; $BYTES/1000000")
+BYTES=$(/usr/bin/stat -f%z "$SIGN_FILE")
+MEGABYTES=$(/usr/bin/bc -l <<< "scale=6; $BYTES/1000000")
 if [[ ($MEGABYTES<1) ]] ; then
 	SIZE="0$MEGABYTES"
 else
 	SIZE="$MEGABYTES"
 fi
-if [[ ($MEGABYTES>500) ]] ; then
-	PREHASH="true"
-else
+LIMIT=$(echo $SIZE">"500 | /usr/bin/bc -l)
+if [[ "$LIMIT" == "0" ]] ; then
 	PREHASH="false"
+elif [[ "$LIMIT" == "1" ]] ; then
+	PREHASH="true"
 fi
 
 # sign target file

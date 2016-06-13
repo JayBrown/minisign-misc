@@ -34,3 +34,6 @@ You need to have Spotlight enabled for `mdfind` to locate the terminal-notifier.
 
 ## General Notes
 * My own minisign public key for releases on Github will be created in `${HOME}/Documents/minisign`
+
+## To-do
+* Switch private keys directory to `${HOME}/.minisign` (depending on minisign update)

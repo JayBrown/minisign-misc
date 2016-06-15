@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# minisign-verify v1.3 (shell script version)
+# minisign-verify v1.3.1 (shell script version)
 
 LANG=en_US.UTF-8
 export PATH=/usr/local/bin:$PATH
@@ -21,7 +21,7 @@ notify () {
 }
 
 # look for terminal-notifier
-TERMNOTE_LOC=$(/usr/bin/mdfind kMDItemCFBundleIdentifier = "nl.superalloy.oss.terminal-notifier" 2>/dev/null)
+TERMNOTE_LOC=$(/usr/bin/mdfind "kMDItemCFBundleIdentifier = 'nl.superalloy.oss.terminal-notifier'" 2>/dev/null | /usr/bin/awk 'NR==1')
 if [[ "$TERMNOTE_LOC" == "" ]] ; then
 	NOTESTATUS="osa"
 else

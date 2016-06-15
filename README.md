@@ -27,10 +27,12 @@ You need to have Spotlight enabled for `mdfind` to locate the terminal-notifier.
 * If you encounter problems, open them with Automator and save/install from there
 * Standard Finder integration in the Services menu
 
-### Shell scripts
+### Shell scripts [optional]
 * Move the scripts to `/usr/local/bin`
 * In your shell enter `chmod +x /usr/local/bin/minisign-verify.sh` and `chmod +x /usr/local/bin/minisign-sign.sh`
 * Run the scripts with `minisign-verify.sh /path/to/your/file` and `minisign-sign.sh /path/to/your/file`
+
+Only necessary if for some reason you want to run this from the shell or another shell script.
 
 ## General Notes
 * My own minisign public key for releases on Github will be created in `${HOME}/Documents/minisign`

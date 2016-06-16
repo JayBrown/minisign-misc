@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# minisign-verify v1.3.2 (shell script version)
+# minisign-verify v1.4 (shell script version)
 
 LANG=en_US.UTF-8
 export PATH=/usr/local/bin:$PATH
@@ -75,8 +75,8 @@ if [[ ! -e "$PUBKEY_LOC" ]] ; then
 fi
 
 # look for minisign binary
-MS_STATUS=$(which -a minisign 2>&1)
-if [[ "$MS_STATUS" == "minisign not found" ]] || [[ "$MS_STATUS" == "which: no minisign in"* ]] ; then
+MINISIGN=$(which minisign 2>&1)
+if [[ "$MINISIGN" == "minisign not found" ]] || [[ "$MINISIGN" == "which: no minisign in"* ]] ; then
 	notify "Error: minisign not found" "Please install minisign first"
 	exit
 fi
@@ -100,7 +100,7 @@ if [[ ! -e "$MINISIG_LOC" ]] ; then
 tell application "System Events"
 	activate
 	set theDirectory to (path to downloads folder from user domain)
-	set aKey to choose file with prompt "Locate the relevant signature (.minisig) file…" default location theDirectory without invisibles
+	set aKey to choose file with prompt "Locate the signature (.minisig) file for " & "$TARGET_NAME" & "…" default location theDirectory without invisibles
 	set theKeyPath to (POSIX path of aKey)
 end tell
 theKeyPath
@@ -123,7 +123,7 @@ tell application "System Events"
 		default answer "" ¬
 		buttons {"Cancel", "Select Key File", "Enter"} ¬
 		default button 3 ¬
-		with title "Choose Method" ¬
+		with title "Verify " & "$TARGET_NAME" ¬
 		with icon file theLogoPath ¬
 		giving up after 180)
 	if theButton = "Enter" then
@@ -226,9 +226,9 @@ fi
 
 # verify
 if [[ "$METHOD" == "keyfile" ]] || [[ "$SAVE_STATUS" == "true" ]] ; then
-	MS_OUT=$(/usr/local/bin/minisign -V -x "$MINISIG_LOC" -p "$PUBKEY_LOC" -m "$VER_FILE")
+	MS_OUT=$("$MINISIGN" -V -x "$MINISIG_LOC" -p "$PUBKEY_LOC" -m "$VER_FILE")
 else
-	MS_OUT=$(/usr/local/bin/minisign -V -x "$MINISIG_LOC" -P "$PUBKEY" -m "$VER_FILE")
+	MS_OUT=$("$MINISIGN" -V -x "$MINISIG_LOC" -P "$PUBKEY" -m "$VER_FILE")
 fi
 if [[ $(echo "$MS_OUT" | /usr/bin/grep "Signature and comment signature verified") == "" ]] ; then
 	notify "Verification error" "$TARGET_NAME"

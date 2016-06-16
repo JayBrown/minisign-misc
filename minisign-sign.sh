@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# minisign-sign v1.3.2 (shell script version)
+# minisign-sign v1.4 (shell script version)
 
 LANG=en_US.UTF-8
 export PATH=/usr/local/bin:$PATH
@@ -73,8 +73,8 @@ if [[ -e "$CACHE_DIR/lcars.base64" ]] ; then
 fi
 
 # look for minisign binary
-MS_STATUS=$(which -a minisign 2>&1)
-if [[ "$MS_STATUS" == "minisign not found" ]] || [[ "$MS_STATUS" == "which: no minisign in"* ]] ; then
+MINISIGN=$(which minisign 2>&1)
+if [[ "$MINISIGN" == "minisign not found" ]] || [[ "$MINISIGN" == "which: no minisign in"* ]] ; then
 	notify "Error: minisign not found" "Please install minisign first"
 	exit
 fi
@@ -105,10 +105,10 @@ MS_METHOD=$(/usr/bin/osascript << EOT
 tell application "System Events"
 	activate
 	set theLogoPath to ((path to library folder from user domain) as text) & "Caches:local.lcars.minisign:lcars.png"
-	set theButton to button returned of (display dialog "Do you want to create a new key pair or sign your file with an existing key?" ¬
+	set theButton to button returned of (display dialog "Do you want to create a new key pair or sign the file with an existing key?" ¬
 		buttons {"Cancel", "New", "Select Key File"} ¬
 		default button 3 ¬
-		with title "Choose Method" ¬
+		with title "Sign " & "$TARGET_NAME" ¬
 		with icon file theLogoPath ¬
 		giving up after 180)
 	if theButton = "New" then
@@ -161,7 +161,7 @@ EOT)
 		exit
 	fi
 	/usr/bin/security add-generic-password -s "minisign-$KEYPAIR_NAME" -a "$ACCOUNT" -w "$KEYPAIR_PW"
-	(echo "$KEYPAIR_PW";echo "$KEYPAIR_PW") | /usr/local/bin/minisign -G -p "$SIGS_DIR/$KEYPAIR_NAME.pub" -s "$PRIVATE_DIR/$KEYPAIR_NAME.key"
+	(echo "$KEYPAIR_PW";echo "$KEYPAIR_PW") | "$MINISIGN" -G -p "$SIGS_DIR/$KEYPAIR_NAME.pub" -s "$PRIVATE_DIR/$KEYPAIR_NAME.key"
 	SIGNING_KEY="$PRIVATE_DIR/$KEYPAIR_NAME.key"
 	PUBKEY_LOC="$SIGS_DIR/$KEYPAIR_NAME.pub"
 fi
@@ -299,9 +299,9 @@ fi
 
 # sign target file
 if [[ "$PREHASH" == "true" ]] ; then
-	MS_OUT=$(echo "$KEYPAIR_PW" | /usr/local/bin/minisign -S -H -x "$MINISIG_LOC" -s "$SIGNING_KEY" -c "$UNTRUSTED" -t "$TRUSTED" -m "$SIGN_FILE")
+	MS_OUT=$(echo "$KEYPAIR_PW" | "$MINISIGN" -S -H -x "$MINISIG_LOC" -s "$SIGNING_KEY" -c "$UNTRUSTED" -t "$TRUSTED" -m "$SIGN_FILE")
 elif [[ "$PREHASH" == "false" ]] ; then
-	MS_OUT=$(echo "$KEYPAIR_PW" | /usr/local/bin/minisign -S -x "$MINISIG_LOC" -s "$SIGNING_KEY" -c "$UNTRUSTED" -t "$TRUSTED" -m "$SIGN_FILE")
+	MS_OUT=$(echo "$KEYPAIR_PW" | "$MINISIGN" -S -x "$MINISIG_LOC" -s "$SIGNING_KEY" -c "$UNTRUSTED" -t "$TRUSTED" -m "$SIGN_FILE")
 fi
 if [[ $(echo "$MS_OUT" | /usr/bin/grep "Wrong password for that key") != "" ]] ; then
 	notify "Signing error" "Wrong password"

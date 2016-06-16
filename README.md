@@ -42,9 +42,9 @@ Only necessary if for some reason you want to run this from the shell or another
 ### Signing
 ![ms-sign-screengrab](https://github.com/JayBrown/minisign-misc/blob/master/img/minisign-sign-grab.png)
 
-![ms-verify-screengrab](https://github.com/JayBrown/minisign-misc/blob/master/img/minisign-verify-grab.png)
+![ms-signresults-screengrab](https://github.com/JayBrown/minisign-misc/blob/master/img/minisign-signingresults-grab.png)
 
 ### Verifying
+![ms-verify-screengrab](https://github.com/JayBrown/minisign-misc/blob/master/img/minisign-verify-grab.png)
 
-![ms-signresults-screengrab](https://github.com/JayBrown/minisign-misc/blob/master/img/minisign-signingresults-grab.png)
 ![ms-verifyresults-screengrab](https://github.com/JayBrown/minisign-misc/blob/master/img/minisign-verifyingresults-grab.png)

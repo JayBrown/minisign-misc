@@ -7,9 +7,7 @@
 # Minisign Miscellanea <img src="https://github.com/JayBrown/minisign-misc/blob/master/img/jb-img.png" height="20px"/>
 **macOS workflows and shell scripts to verify and sign files with minisign**
 
-![ms-sign-screengrab](https://github.com/JayBrown/minisign-misc/blob/master/img/minisign-sign-grab.png) ![ms-verify-screengrab](https://github.com/JayBrown/minisign-misc/blob/master/img/minisign-verify-grab.png)
-
-![ms-signresults-screengrab](https://github.com/JayBrown/minisign-misc/blob/master/img/minisign-signingresults-grab.png) ![ms-verifyresults-screengrab](https://github.com/JayBrown/minisign-misc/blob/master/img/minisign-verifyingresults-grab.png)
+![ms-verify-screengrab](https://github.com/JayBrown/minisign-misc/blob/master/img/minisign-verify-grab.png)
 
 ## Prerequisites
 Install using [Homebrew](http://brew.sh) with `brew install <software-name>` (or with a similar manager)
@@ -39,3 +37,14 @@ Only necessary if for some reason you want to run this from the shell or another
 
 ## To-do
 * Switch private keys directory to `${HOME}/.minisign` (depending on minisign update)
+
+## Screengrabs
+### Signing
+![ms-sign-screengrab](https://github.com/JayBrown/minisign-misc/blob/master/img/minisign-sign-grab.png)
+
+![ms-verify-screengrab](https://github.com/JayBrown/minisign-misc/blob/master/img/minisign-verify-grab.png)
+
+### Verifying
+
+![ms-signresults-screengrab](https://github.com/JayBrown/minisign-misc/blob/master/img/minisign-signingresults-grab.png)
+![ms-verifyresults-screengrab](https://github.com/JayBrown/minisign-misc/blob/master/img/minisign-verifyingresults-grab.png)

@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# minisign-verify v1.3.1 (shell script version)
+# minisign-verify v1.3.2 (shell script version)
 
 LANG=en_US.UTF-8
 export PATH=/usr/local/bin:$PATH

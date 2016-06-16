@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# minisign-sign v1.3.1 (shell script version)
+# minisign-sign v1.3.2 (shell script version)
 
 LANG=en_US.UTF-8
 export PATH=/usr/local/bin:$PATH
@@ -105,7 +105,7 @@ MS_METHOD=$(/usr/bin/osascript << EOT
 tell application "System Events"
 	activate
 	set theLogoPath to ((path to library folder from user domain) as text) & "Caches:local.lcars.minisign:lcars.png"
-	set theButton to button returned of (display dialog "Do you want to create a new key pair or sign your file(s) with an existing key?" ¬
+	set theButton to button returned of (display dialog "Do you want to create a new key pair or sign your file with an existing key?" ¬
 		buttons {"Cancel", "New", "Select Key File"} ¬
 		default button 3 ¬
 		with title "Choose Method" ¬
@@ -146,7 +146,7 @@ EOT)
 tell application "System Events"
 	activate
 	set theLogoPath to ((path to library folder from user domain) as text) & "Caches:local.lcars.minisign:lcars.png"
-	set thePassword to text returned of (display dialog "Enter the password for the new secret key. It will be stored in your OS X keychain." ¬
+	set thePassword to text returned of (display dialog "Enter the password for the new secret key. It will be stored in your macOS keychain." ¬
 		default answer "" ¬
 		with hidden answer ¬
 		buttons {"Cancel", "Enter"} ¬
@@ -223,7 +223,7 @@ EOT)
 tell application "System Events"
 	activate
 	set theLogoPath to ((path to library folder from user domain) as text) & "Caches:local.lcars.minisign:lcars.png"
-	set thePassword to text returned of (display dialog "There is no password stored in your OS X keychain for this secret key. Enter the password you chose when you created this key." ¬
+	set thePassword to text returned of (display dialog "There is no password stored in your macOS keychain for this secret key. Enter the password you chose when you created this key." ¬
 		default answer "" ¬
 		with hidden answer ¬
 		buttons {"Cancel", "Enter"} ¬
@@ -321,9 +321,9 @@ notify "Signing successful" "$TARGET_NAME"
 
 # set info text
 if [[ "$PREHASH" == "false" ]] ; then
-	PREHASH_INFO="compatible with OpenBSD signify for OS X"
+	PREHASH_INFO="compatible with OpenBSD signify"
 elif [[ "$PREHASH" == "true" ]] ; then
-	PREHASH_INFO="not compatible with OpenBSD signify for OS X"
+	PREHASH_INFO="not compatible with OpenBSD signify"
 fi
 INFO_TXT="■︎■■ File ■■■
 $TARGET_NAME

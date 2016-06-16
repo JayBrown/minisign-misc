@@ -36,7 +36,6 @@ Only necessary if for some reason you want to run this from the shell or another
 * My own minisign public key for releases on Github will be created in `${HOME}/Documents/minisign`
 
 ## To-do
-- [ ] Notification if update is available
 - [ ] Switch private keys directory to `${HOME}/.minisign` (pending `minisign` update)
 
 ## Screengrabs

@@ -1,10 +1,11 @@
 #!/bin/bash
 
-# minisign-sign v1.4.1 (shell script version)
+# minisign-sign v1.5 (shell script version)
 
 LANG=en_US.UTF-8
 export PATH=/usr/local/bin:$PATH
 ACCOUNT=$(who am i | /usr/bin/awk '{print $1}')
+CURRENT_VERSION="1.5"
 
 # determine correct Mac OS name
 MACOS2NO=$(/usr/bin/sw_vers -productVersion | /usr/bin/awk -F. '{print $2}')
@@ -95,6 +96,14 @@ PUBKEY_LOC="$SIGS_DIR/$PUBKEY_NAME"
 if [[ ! -e "$PUBKEY_LOC" ]] ; then
 	touch "$PUBKEY_LOC"
 	echo -e "untrusted comment: minisign public key 37D030AC5E03C787\nRWSHxwNerDDQN8RlBeFUuLkB9bPqsR2T6es0jmzguvpvqWiXjxzTfaRY" > "$PUBKEY_LOC"
+fi
+
+# check for update
+NEWEST_VERSION=$(/usr/bin/curl --silent https://api.github.com/repos/JayBrown/minisign-misc/releases/latest | /usr/bin/awk '/tag_name/ {print $2}' | xargs)
+NEWEST_VERSION=${NEWEST_VERSION//,}
+if [[ $NEWEST_VERSION>$CURRENT_VERSION ]] ; then
+	notify "Update available" "Minisign Miscellanea v$NEWEST_VERSION"
+	/usr/bin/open "https://github.com/JayBrown/minisign-misc/releases/latest"
 fi
 
 # check for false input

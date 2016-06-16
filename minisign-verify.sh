@@ -1,10 +1,11 @@
 #!/bin/bash
 
-# minisign-verify v1.4.1 (shell script version)
+# minisign-verify v1.5 (shell script version)
 
 LANG=en_US.UTF-8
 export PATH=/usr/local/bin:$PATH
 ACCOUNT=$(who am i | /usr/bin/awk '{print $1}')
+CURRENT_VERSION="1.5"
 
 # set notification function
 notify () {
@@ -68,17 +69,25 @@ if [[ -e "$CACHE_DIR/lcars.base64" ]] ; then
 	rm -rf "$CACHE_DIR/lcars.base64"
 fi
 
+# look for minisign binary
+MINISIGN=$(which minisign 2>&1)
+if [[ "$MINISIGN" == "minisign not found" ]] || [[ "$MINISIGN" == "which: no minisign in"* ]] ; then
+	notify "Error: minisign not found" "Please install minisign first"
+	exit
+fi
+
 # touch JayBrown public key file
 if [[ ! -e "$PUBKEY_LOC" ]] ; then
 	touch "$PUBKEY_LOC"
 	echo -e "untrusted comment: minisign public key 37D030AC5E03C787\nRWSHxwNerDDQN8RlBeFUuLkB9bPqsR2T6es0jmzguvpvqWiXjxzTfaRY" > "$PUBKEY_LOC"
 fi
 
-# look for minisign binary
-MINISIGN=$(which minisign 2>&1)
-if [[ "$MINISIGN" == "minisign not found" ]] || [[ "$MINISIGN" == "which: no minisign in"* ]] ; then
-	notify "Error: minisign not found" "Please install minisign first"
-	exit
+# check for update
+NEWEST_VERSION=$(/usr/bin/curl --silent https://api.github.com/repos/JayBrown/minisign-misc/releases/latest | /usr/bin/awk '/tag_name/ {print $2}' | xargs)
+NEWEST_VERSION=${NEWEST_VERSION//,}
+if [[ $NEWEST_VERSION>$CURRENT_VERSION ]] ; then
+	notify "Update available" "Minisign Miscellanea v$NEWEST_VERSION"
+	/usr/bin/open "https://github.com/JayBrown/minisign-misc/releases/latest"
 fi
 
 # check for false input

@@ -1,10 +1,20 @@
 #!/bin/bash
 
-# minisign-sign v1.4 (shell script version)
+# minisign-sign v1.4.1 (shell script version)
 
 LANG=en_US.UTF-8
 export PATH=/usr/local/bin:$PATH
 ACCOUNT=$(who am i | /usr/bin/awk '{print $1}')
+
+# determine correct Mac OS name
+MACOS2NO=$(/usr/bin/sw_vers -productVersion | /usr/bin/awk -F. '{print $2}')
+if [[ "$MACOS2NO" -le 7 ]] ; then
+	OSNAME="Mac OS X"
+elif [[ "$MACOS2NO" -ge 8 ]] && [[ "$MACOS2NO" -le 11 ]] ; then
+	OSNAME="OS X"
+elif [[ "$MACOS2NO" -ge 12 ]] ; then
+	OSNAME="macOS"
+fi
 
 # set notification function
 notify () {
@@ -146,7 +156,7 @@ EOT)
 tell application "System Events"
 	activate
 	set theLogoPath to ((path to library folder from user domain) as text) & "Caches:local.lcars.minisign:lcars.png"
-	set thePassword to text returned of (display dialog "Enter the password for the new secret key. It will be stored in your macOS keychain." ¬
+	set thePassword to text returned of (display dialog "Enter the password for the new secret key. It will be stored in your " & "$OSNAME" & " keychain." ¬
 		default answer "" ¬
 		with hidden answer ¬
 		buttons {"Cancel", "Enter"} ¬
@@ -223,7 +233,7 @@ EOT)
 tell application "System Events"
 	activate
 	set theLogoPath to ((path to library folder from user domain) as text) & "Caches:local.lcars.minisign:lcars.png"
-	set thePassword to text returned of (display dialog "There is no password stored in your macOS keychain for this secret key. Enter the password you chose when you created this key." ¬
+	set thePassword to text returned of (display dialog "There is no password stored in your " & "$OSNAME" & " keychain for this secret key. Enter the password you chose when you created this key." ¬
 		default answer "" ¬
 		with hidden answer ¬
 		buttons {"Cancel", "Enter"} ¬

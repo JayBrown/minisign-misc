@@ -37,6 +37,7 @@ Only necessary if for some reason you want to run this from the shell or another
 
 ## To-do
 - [ ] Switch private keys directory to `${HOME}/.minisign` (pending `minisign` update)
+- [ ] osascript select keys from list; select in Finder only if pub/key directories empty
 
 ## Screengrabs
 ### Signing

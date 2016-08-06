@@ -17,6 +17,8 @@ Install using [Homebrew](http://brew.sh) with `brew install <software-name>` (or
 
 You need to have Spotlight enabled for `mdfind` to locate the terminal-notifier.app on your volume; if you don't install terminal-notifier, or if you have deactivated Spotlight, the minisign scripts will call notifications via AppleScript instead
 
+Because Minisign Miscellanea use the macOS Notification Center, the minimum Mac OS requirement is **OS X 10.8 (Mountain Lion)**.
+
 ## Installation & Usage
 * [Download the latest DMG](https://github.com/JayBrown/minisign-misc/releases) and open
 

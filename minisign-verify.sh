@@ -1,11 +1,45 @@
 #!/bin/bash
 
-# minisign-verify v1.5 (shell script version)
+# minisign-verify v1.7 (shell script version)
 
 LANG=en_US.UTF-8
 export PATH=/usr/local/bin:$PATH
 ACCOUNT=$(who am i | /usr/bin/awk '{print $1}')
-CURRENT_VERSION="1.5"
+CURRENT_VERSION="1.7"
+
+# check compatibility
+MACOS2NO=$(/usr/bin/sw_vers -productVersion | /usr/bin/awk -F. '{print $2}')
+if [[ "$MACOS2NO" -le 7 ]] ; then
+	echo "Error! Exiting…"
+	echo "minisign-misc needs at least OS X 10.8 (Mountain Lion)"
+	INFO=$(/usr/bin/osascript << EOT
+tell application "System Events"
+	activate
+	set userChoice to button returned of (display alert "Error! Minimum OS requirement:" & return & "OS X 10.8 (Mountain Lion)" ¬
+		as critical ¬
+		buttons {"Quit"} ¬
+		default button 1 ¬
+		giving up after 60)
+end tell
+EOT)
+	exit
+fi
+
+# public key check function
+pkch () {
+	case $1 in
+		[!RW]* ) echo "false" ;;
+		* )
+		case $1 in
+			( *[!0-9A-Za-z+/]* | "" ) echo "false" ;;
+			( * )
+				case ${#1} in
+					( 56 ) echo "true" ;;
+					( * ) echo "false" ;;
+				esac
+		esac
+	esac
+}
 
 # set notification function
 notify () {
@@ -69,11 +103,19 @@ if [[ -e "$CACHE_DIR/lcars.base64" ]] ; then
 	rm -rf "$CACHE_DIR/lcars.base64"
 fi
 
-# look for minisign binary
+# look for minisign binary & check version (prehashing)
 MINISIGN=$(which minisign 2>&1)
 if [[ "$MINISIGN" == "minisign not found" ]] || [[ "$MINISIGN" == "which: no minisign in"* ]] ; then
 	notify "Error: minisign not found" "Please install minisign first"
+	/usr/bin/open "https://jedisct1.github.io/minisign/"
 	exit
+else
+	MS_VERSION=$("$MINISIGN" -v | /usr/bin/awk '{print $2}')
+	if (( $(echo "$MS_VERSION < 0.6" | /usr/bin/bc -l) )) ; then
+		notify "Error: outdated minisign" "Please update minisign first"
+		/usr/bin/open "https://jedisct1.github.io/minisign/"
+		exit
+	fi
 fi
 
 # touch JayBrown public key file
@@ -81,11 +123,12 @@ if [[ ! -e "$PUBKEY_LOC" ]] ; then
 	touch "$PUBKEY_LOC"
 	echo -e "untrusted comment: minisign public key 37D030AC5E03C787\nRWSHxwNerDDQN8RlBeFUuLkB9bPqsR2T6es0jmzguvpvqWiXjxzTfaRY" > "$PUBKEY_LOC"
 fi
+PUBKEY_LOC=""
 
 # check for update
 NEWEST_VERSION=$(/usr/bin/curl --silent https://api.github.com/repos/JayBrown/minisign-misc/releases/latest | /usr/bin/awk '/tag_name/ {print $2}' | xargs)
 NEWEST_VERSION=${NEWEST_VERSION//,}
-if [[ $NEWEST_VERSION>$CURRENT_VERSION ]] ; then
+if (( $(echo "$NEWEST_VERSION > $CURRENT_VERSION" | /usr/bin/bc -l) )) ; then
 	notify "Update available" "Minisign Miscellanea v$NEWEST_VERSION"
 	/usr/bin/open "https://github.com/JayBrown/minisign-misc/releases/latest"
 fi
@@ -93,9 +136,20 @@ fi
 # check for false input
 VER_FILE="$1"
 TARGET_NAME=$(/usr/bin/basename "$VER_FILE")
+if [[ ! -f "$VER_FILE" ]] ; then
+	PATH_TYPE=$(/usr/bin/mdls -name kMDItemContentTypeTree "$VER_FILE" | /usr/bin/grep -e "bundle")
+	if [[ "$PATH_TYPE" != "" ]] ; then
+		notify "Error: target is a bundle" "$TARGET_NAME"
+		exit # ALT: continue
+	fi
+	if [[ -d "$VER_FILE" ]] ; then
+		notify "Error: target is a directory" "./$TARGET_NAME"
+		exit # ALT: continue
+	fi
+fi
 if [[ "$VER_FILE" == *".minisig" ]] || [[ "$VER_FILE" == *".pub" ]] || [[ "$VER_FILE" == *".key" ]]; then
-	notify "Error: wrong file" "$TARGET_NAME"
-	exit
+	notify "Error: minisign filetype" "$TARGET_NAME"
+	exit # ALT: continue
 fi
 
 # more settings
@@ -108,27 +162,34 @@ if [[ ! -e "$MINISIG_LOC" ]] ; then
 	MINISIG_LOC=$(/usr/bin/osascript << EOT
 tell application "System Events"
 	activate
-	set theDirectory to (path to downloads folder from user domain)
+	set theDirectory to "$TARGET_DIR" as string
 	set aKey to choose file with prompt "Locate the signature (.minisig) file for " & "$TARGET_NAME" & "…" default location theDirectory without invisibles
 	set theKeyPath to (POSIX path of aKey)
 end tell
 theKeyPath
 EOT)
 	if [[ "$MINISIG_LOC" == "" ]] || [[ "$MINISIG_LOC" == "false" ]] ; then
-		exit
+		exit # ALT: continue
 	elif [[ "$MINISIG_LOC" != *".minisig" ]] ; then
 		CHOICE_BASENAME=$(/usr/bin/basename "$MINISIG_LOC")
 		notify "Error: not a .minisig file" "$CHOICE_BASENAME"
-		exit
+		exit # ALT: continue
 	fi
 fi
 
-# choose: enter pub key or choose pub key file
-METHOD_ALL=$(/usr/bin/osascript << EOT
+# check clipboard for public key
+CLIPBOARD=$(/usr/bin/pbpaste | xargs)
+PK_CLIP=$(pkch "$CLIPBOARD")
+if [[ "$PK_CLIP" == "true" ]] ; then
+	PUBKEY="$CLIPBOARD"
+	METHOD="key"
+	TOSAVE="input"
+else # choose: enter pub key or choose pub key file
+	METHOD_ALL=$(/usr/bin/osascript << EOT
 tell application "System Events"
 	activate
 	set theLogoPath to ((path to library folder from user domain) as text) & "Caches:local.lcars.minisign:lcars.png"
-	set {theButton, theReply} to {button returned, text returned} of (display dialog "Enter a minisign public key or select a local public key (.pub) file." ¬
+	set {theButton, theReply} to {button returned, text returned} of (display dialog "Enter the minisign public key, or select the key from a local public key (.pub) file." ¬
 		default answer "" ¬
 		buttons {"Cancel", "Select Key File", "Enter"} ¬
 		default button 3 ¬
@@ -143,105 +204,113 @@ tell application "System Events"
 end tell
 theButton & "@@@" & theReply
 EOT)
-if [[ "$METHOD_ALL" == "" ]] || [[ "$METHOD_ALL" == "false" ]] || [[ "$METHOD_ALL" == "key@@@" ]] ; then
-	exit
-fi
-METHOD=$(echo "$METHOD_ALL" | /usr/bin/awk -F@@@ '{print $1}')
-PUBKEY=$(echo "$METHOD_ALL" | /usr/bin/awk -F@@@ '{print $2}')
-if [[ "$PUBKEY" == "@@@"* ]] || [[ "$METHOD" == *"@@@" ]] ; then
-	notify "Internal error" "Could not parse input"
-	exit
+	if [[ "$METHOD_ALL" == "" ]] || [[ "$METHOD_ALL" == "false" ]] || [[ "$METHOD_ALL" == "key@@@" ]] ; then
+		exit # ALT: continue
+	fi
+	METHOD=$(echo "$METHOD_ALL" | /usr/bin/awk -F@@@ '{print $1}')
+	PUBKEY=$(echo "$METHOD_ALL" | /usr/bin/awk -F@@@ '{print $2}')
+	if [[ "$PUBKEY" == "@@@"* ]] || [[ "$METHOD" == *"@@@" ]] ; then
+		notify "Internal error" "Could not parse input"
+		exit # ALT: continue
+	fi
+	if [[ "$METHOD" == "key" ]] ; then
+		PK_CHECK=$(pkch "$PUBKEY")
+		if [[ "$PK_CHECK" == "false" ]] ; then
+			notify "Error" "Not a minisign public key"
+			exit # ALT: continue
+		fi
+		TOSAVE="input"
+	fi
 fi
 
-# choose public key file or enter public key file name, if user wants to save
-if [[ "$METHOD_ALL" == "keyfile@@@"* ]] ; then
+# choose public key file
+if [[ "$METHOD" == "keyfile" ]] ; then
+	# choose from existing public key file list
+	PK_LIST=$(find "$SIGS_DIR" -maxdepth 1 -name \*.pub | /usr/bin/rev | /usr/bin/awk -F/ '{print $1}' | /usr/bin/awk -F. '{print substr($0, index($0,$2))}' | /usr/bin/rev | /usr/bin/sort -n)
+	if [[ "$PK_LIST" != "" ]] ; then
+		PKLIST_CHOICE=$(/usr/bin/osascript << EOT
+tell application "System Events"
+	activate
+	set theList to {}
+	set theItems to paragraphs of "$PK_LIST"
+	repeat with anItem in theItems
+		set theList to theList & {(anItem) as string}
+	end repeat
+	set theList to theList & {"🔎 Locate manually…"}
+	set AppleScript's text item delimiters to return & linefeed
+	set theResult to choose from list theList with prompt "Choose the key from one of your saved public key files, or locate the public key file manually." with title "Select Public Key" OK button name "Select" cancel button name "Cancel" without multiple selections allowed
+	return the result as string
+	set AppleScript's text item delimiters to ""
+end tell
+theResult
+EOT)
+		if [[ "$PKLIST_CHOICE" == "" ]] || [[ "$PKLIST_CHOICE" == "false" ]] ; then
+			exit # ALT: continue
+		fi
+		if [[ "$PKLIST_CHOICE" == "🔎 Locate manually…" ]] ; then
+			MANUAL="true"
+		else
+			MANUAL="false"
+			TOSAVE="false"
+			PUBKEY_LOC="$SIGS_DIR/$PKLIST_CHOICE.pub"
+		fi
+	else
+		MANUAL="true"
+	fi
+elif [[ "$METHOD" == "key" ]] ; then
+	if [[ "$PUBKEY" == "" ]] ; then
+		notify "Internal error" "Could not parse input"
+		exit # ALT: continue
+	fi
+else
+	notify "Internal error" "Could not parse input"
+	exit # ALT: continue
+fi
+
+# manual public key file location method
+if [[ "$MANUAL" == "true" ]] ; then
 	PUBKEY_CHOICE=$(/usr/bin/osascript << EOT
 tell application "System Events"
 	activate
-	set theKeyDirectory to (((path to documents folder from user domain) as text) & "minisign") as alias
-	set aKey to choose file with prompt "Select the relevant minisign public key (.pub) file…" default location theKeyDirectory without invisibles
+	set theKeyDirectory to "$TARGET_DIR" as string
+	set aKey to choose file with prompt "Select the public key (.pub) file…" default location theKeyDirectory without invisibles
 	set theKeyPath to (POSIX path of aKey)
 end tell
 theKeyPath
 EOT)
 	if [[ "$PUBKEY_CHOICE" == "" ]] || [[ "$PUBKEY_CHOICE" == "false" ]] ; then
-		exit
+		exit # ALT: continue
 	fi
 	if [[ "$PUBKEY_CHOICE" != *".pub" ]]; then
 		CHOICE_BASENAME=$(/usr/bin/basename "$PUBKEY_CHOICE")
 		notify "Error: not a .pub file" "$CHOICE_BASENAME"
-		exit
+		exit # ALT: continue
 	fi
 	CHOICE_DIR=$(/usr/bin/dirname "$PUBKEY_CHOICE")
-	CHOICE_BASENAME=$(/usr/bin/basename "$PUBKEY_CHOICE")
-	if [[ "$CHOICE_DIR" != "$SIGS_DIR" ]] ; then
-		cp "$PUBKEY_CHOICE" "$SIGS_DIR/$CHOICE_BASENAME"
-	fi
-	PUBKEY_LOC="$SIGS_DIR/$CHOICE_BASENAME"
-elif [[ "$METHOD" == "key" ]] ; then
-	if [[ "$PUBKEY" == "" ]] ; then
-		notify "Internal error" "Could not parse input"
-		exit
+	if [[ "$CHOICE_DIR" == "$SIGS_DIR" ]] ; then
+		PARENT="false"
+		TOSAVE="false"
+		notify "Notification: public key" "Key already installed"
 	else
-		SAVE_CHOICE=$(/usr/bin/osascript << EOT
-tell application "System Events"
-	activate
-	set theLogoPath to ((path to library folder from user domain) as text) & "Caches:local.lcars.minisign:lcars.png"
-	set theButton to button returned of (display dialog "Do you want to save this public key in a .pub file for later use?" ¬
-		buttons {"Cancel", "Verify Only", "Save"} ¬
-		default button 3 ¬
-		with title "Save Public Key File" ¬
-		with icon file theLogoPath ¬
-		giving up after 180)
-end tell
-theButton
-EOT)
-		if [[ "$SAVE_CHOICE" == "" ]] || [[ "$SAVE_CHOICE" == "false" ]] ; then
-			exit
-		fi
-		if [[ "$SAVE_CHOICE" == "Save" ]] ; then
-			SAVE_STATUS="true"
-			NEW_PUBKEY_NAME=$(/usr/bin/osascript << EOT
-tell application "System Events"
-	activate
-	set theLogoPath to ((path to library folder from user domain) as text) & "Caches:local.lcars.minisign:lcars.png"
-	set theReply to text returned of (display dialog "Please enter the file name of the new public key file. The current date and the suffix .pub will added automatically." ¬
-		default answer "" ¬
-		buttons {"Cancel", "Enter"} ¬
-		default button 2 ¬
-		with title "Save Public Key File" ¬
-		with icon file theLogoPath ¬
-		giving up after 180)
-end tell
-theReply
-EOT)
-			if [[ "$NEW_PUBKEY_NAME" == "" ]] || [[ "$NEW_PUBKEY_NAME" == "false" ]] ; then
-				exit
-			fi
-			CURRENT_DATE=$(date +%Y%m%d-%H%M%S)
-			if [[ "$NEW_PUBKEY_NAME" == *".pub" ]] ; then
-				NEW_PUBKEY_NAME="${NEW_PUBKEY_NAME%.*}"
-			fi
-			PUBKEY_LOC="$SIGS_DIR/$NEW_PUBKEY_NAME-$CURRENT_DATE.pub"
-			echo -e "untrusted comment: minisign public key \n$PUBKEY" > "$PUBKEY_LOC"
-		elif [[ "$SAVE_CHOICE" == "Verify Only" ]] ; then
-			SAVE_STATUS="false"
-		fi
+		PARENT="true"
+		TOSAVE="copy"
 	fi
-else
-	notify "Internal error" "Could not parse input"
-	exit
+	PUBKEY_LOC="$PUBKEY_CHOICE"
 fi
 
 # verify
 if [[ "$METHOD" == "keyfile" ]] || [[ "$SAVE_STATUS" == "true" ]] ; then
-	MS_OUT=$("$MINISIGN" -V -x "$MINISIG_LOC" -p "$PUBKEY_LOC" -m "$VER_FILE")
+	echo "Verifying with public key file: $PUBKEY_LOC"
+	MS_OUT=$("$MINISIGN" -V -x "$MINISIG_LOC" -p "$PUBKEY_LOC" -m "$VER_FILE" 2>&1)
 else
-	MS_OUT=$("$MINISIGN" -V -x "$MINISIG_LOC" -P "$PUBKEY" -m "$VER_FILE")
+	echo "Verifying with public key: $PUBKEY"
+	MS_OUT=$("$MINISIGN" -V -x "$MINISIG_LOC" -P "$PUBKEY" -m "$VER_FILE" 2>&1)
 fi
+echo "---"
+echo "$MS_OUT"
 if [[ $(echo "$MS_OUT" | /usr/bin/grep "Signature and comment signature verified") == "" ]] ; then
 	notify "Verification error" "$TARGET_NAME"
-	exit
+	exit # ALT: continue
 fi
 
 # parse comments
@@ -258,7 +327,7 @@ MS_OUT_INFO=$(echo "$MS_OUT" | /usr/bin/sed -n '1p')
 # checksums
 CHECKSUM21=$(/usr/bin/shasum -a 256 "$VER_FILE" | /usr/bin/awk '{print $1}')
 
-# additional checksums (optional); uncomment if needed, then extend $INFO_TXT and $CLIPBOARD_TXT
+# additional checksums (optional); uncomment if needed, then extend $INFO_TXT
 # CHECKSUM5=$(/sbin/md5 -q "$VER_FILE")
 # CHECKSUM1=$(/usr/bin/shasum -a 1 "$VER_FILE" | /usr/bin/awk '{print $1}')
 # CHECKSUM22=$(/usr/bin/shasum -a 512 "$VER_FILE" | /usr/bin/awk '{print $1}')
@@ -271,9 +340,6 @@ if [[ ($MEGABYTES<1) ]] ; then
 else
 	SIZE="$MEGABYTES"
 fi
-
-# notify
-notify "Verification successful" "$TARGET_NAME"
 
 # set info text
 INFO_TXT="■︎■■ File ■■■
@@ -292,19 +358,92 @@ $UNTRUSTED_COMMENT
 $TRUSTED_COMMENT
 
 ■︎■■ Minisign output ■■■
-$MS_OUT_INFO
+$MS_OUT_INFO"
 
-This information has also been copied to your clipboard"
+# notify
+notify "Verification successful" "$TARGET_NAME"
 
-CLIPBOARD_TXT="File: $TARGET_NAME
-Size: $SIZE MB
-Hash (SHA-2, 256 bit): $CHECKSUM21
-Untrusted minisign comment: $UNTRUSTED_COMMENT
-Trusted minisign comment: $TRUSTED_COMMENT
-Minisign output: $MS_OUT_INFO"
+# ask to save current public key
+if [[ "$TOSAVE" != "false" ]] && [[ "$TOSAVE" != "" ]] ; then
+	SAVE_CHOICE=$(/usr/bin/osascript << EOT
+tell application "System Events"
+	activate
+	set theLogoPath to ((path to library folder from user domain) as text) & "Caches:local.lcars.minisign:lcars.png"
+	set theButton to button returned of (display dialog "Do you want to save the current public key for later use?" ¬
+		buttons {"No", "Yes"} ¬
+		default button 2 ¬
+		with title "Save Public Key" ¬
+		with icon file theLogoPath ¬
+		giving up after 180)
+end tell
+theButton
+EOT)
+	if [[ "$SAVE_CHOICE" == "Yes" ]] ; then
+		CURRENT_DATE=$(date +%Y%m%d-%H%M%S)
+		# save the public key (manual entry or clipboard)
+		if [[ "$TOSAVE" == "input" ]] ; then
+			NEW_PUBKEY_NAME=$(/usr/bin/osascript << EOT
+tell application "System Events"
+	activate
+	set theLogoPath to ((path to library folder from user domain) as text) & "Caches:local.lcars.minisign:lcars.png"
+	set theReply to text returned of (display dialog "Please enter the file name of the new public key file. The current date and the suffix .pub will added automatically." ¬
+		default answer "" ¬
+		buttons {"Enter"} ¬
+		default button 1 ¬
+		with title "Save Public Key" ¬
+		with icon file theLogoPath ¬
+		giving up after 180)
+end tell
+theReply
+EOT)
+			if [[ "$NEW_PUBKEY_NAME" == "" ]] ; then
+				NEW_PUBKEY_NAME="minisign"
+			fi
 
-# send info to clipboard
-echo "$CLIPBOARD_TXT" | /usr/bin/pbcopy
+			if [[ "$NEW_PUBKEY_NAME" == *".pub" ]] ; then
+				NEW_PUBKEY_NAME="${NEW_PUBKEY_NAME%.pub}"
+			fi
+			PUBKEY_LOC="$SIGS_DIR/$NEW_PUBKEY_NAME-$CURRENT_DATE.pub"
+			echo -e "untrusted comment: minisign public key \n$PUBKEY" > "$PUBKEY_LOC"
+		# move the public key file to the minisign folder
+		elif [[ "$TOSAVE" == "copy" ]] ; then
+			CHOICE_BASENAME=$(/usr/bin/basename "$PUBKEY_CHOICE")
+			if [[ "$CHOICE_BASENAME" == "minisign.pub" ]] ; then # ask to rename the default name
+				NEW_COPY_NAME=$(/usr/bin/osascript 2>&1 << EOT
+tell application "System Events"
+	activate
+	set theLogoPath to ((path to library folder from user domain) as text) & "Caches:local.lcars.minisign:lcars.png"
+	set theReply to text returned of (display dialog "The public key (.pub) file has the default filename \"minisign\". Please choose a better one before moving it to your minisign folder." ¬
+		default answer "" ¬
+		buttons {"Cancel", "Enter"} ¬
+		default button 2 ¬
+		with title "Choose New Filename" ¬
+		with icon file theLogoPath ¬
+		giving up after 180)
+end tell
+theReply
+EOT)
+				if [[ $(echo "$NEW_COPY_NAME" | /usr/bin/grep "User canceled.") != "" ]] ; then
+					exit # ALT: continue
+				fi
+				if [[ "$NEW_COPY_NAME" != "" ]] ; then
+					if [[ "$NEW_COPY_NAME" == *".pub" ]] ; then
+						CHOICE_BASENAME="${NEW_COPY_NAME%.pub}"
+					else
+						CHOICE_BASENAME="$NEW_COPY_NAME"
+					fi
+				else
+					CHOICE_BASENAME="minisign"
+				fi
+				CHOICE_BASENAME="$CHOICE_BASENAME-$CURRENT_DATE.pub"
+			else
+				CHOICE_BASENAME="${CHOICE_BASENAME%.pub}"
+				CHOICE_BASENAME="$CHOICE_BASENAME-$CURRENT_DATE.pub"
+			fi
+			cp "$PUBKEY_CHOICE" "$SIGS_DIR/$CHOICE_BASENAME" && rm -rf "$PUBKEY_CHOICE"
+		fi
+	fi
+fi
 
 # info window
 INFO=$(/usr/bin/osascript << EOT

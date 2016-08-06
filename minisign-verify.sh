@@ -1,11 +1,11 @@
 #!/bin/bash
 
-# minisign-verify v1.7 (shell script version)
+# minisign-verify v1.7.1 (shell script version)
 
 LANG=en_US.UTF-8
 export PATH=/usr/local/bin:$PATH
 ACCOUNT=$(who am i | /usr/bin/awk '{print $1}')
-CURRENT_VERSION="1.7"
+CURRENT_VERSION="1.71"
 
 # check compatibility
 MACOS2NO=$(/usr/bin/sw_vers -productVersion | /usr/bin/awk -F. '{print $2}')

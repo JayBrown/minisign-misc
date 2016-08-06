@@ -1,11 +1,11 @@
 #!/bin/bash
 
-# minisign-sign v1.7 (shell script version)
+# minisign-sign v1.7.1 (shell script version)
 
 LANG=en_US.UTF-8
 export PATH=/usr/local/bin:$PATH
 ACCOUNT=$(who am i | /usr/bin/awk '{print $1}')
-CURRENT_VERSION="1.7"
+CURRENT_VERSION="1.71"
 
 # check compatibility & determine correct Mac OS name
 MACOS2NO=$(/usr/bin/sw_vers -productVersion | /usr/bin/awk -F. '{print $2}')
@@ -185,7 +185,7 @@ tell application "System Events"
 	repeat with anItem in theItems
 		set theList to theList & {(anItem) as string}
 	end repeat
-	set theList to theList & {"🔎 Locate manually…", "➤ Create new key pair", "✖︎ Remove key pair"}
+	set theList to theList & {"🔎 Locate manually…", "➤ Create new key pair", "🔐 Update key password", "✖︎ Remove key pair"}
 	set AppleScript's text item delimiters to return & linefeed
 	set theResult to choose from list theList with prompt "Choose one of your existing private keys to sign the file, or use one of the alternate options." with title "Sign $TARGET_NAME" OK button name "Select" cancel button name "Cancel" without multiple selections allowed
 	return the result as string
@@ -202,6 +202,57 @@ EOT)
 		elif [[ "$SKLIST_CHOICE" == "➤ Create new key pair" ]] ; then
 			MS_METHOD="new"
 			CONTINUE="true"
+		elif [[ "$SKLIST_CHOICE" == "🔐 Update key password" ]] ; then
+			MS_METHOD="updpw"
+			# select key for password update
+			UPDPW_KEY_COUNT=$(echo "$SK_LIST" | /usr/bin/wc -l | xargs)
+			if [[ "$UPDPW_KEY_COUNT" -gt 1 ]] ; then
+				UPDPW_KEY=$(/usr/bin/osascript << EOT
+tell application "System Events"
+	activate
+	set theList to {}
+	set theItems to paragraphs of "$SK_LIST"
+	repeat with anItem in theItems
+		set theList to theList & {(anItem) as string}
+	end repeat
+	set AppleScript's text item delimiters to return & linefeed
+	set theResult to choose from list theList with prompt "Choose the key pair for password update." with title "Update Password" OK button name "Select" cancel button name "Cancel" without multiple selections allowed
+	set AppleScript's text item delimiters to ""
+end tell
+theResult
+EOT)
+				if [[ "$UPDPW_KEY" == "" ]] || [[ "$UPDPW_KEY" == "false" ]] ; then
+					exit # ALT: break with CONTINUE="true" && BREAKER="true"
+				fi
+			else
+				UPDPW_KEY="$SK_LIST"
+			fi
+			# update password for existing key entry in the keychain
+			NEW_KEYPW=$(/usr/bin/osascript 2>&1 << EOT
+tell application "System Events"
+	activate
+	set theLogoPath to ((path to library folder from user domain) as text) & "Caches:local.lcars.minisign:lcars.png"
+	set thePassword to text returned of (display dialog "Enter the new password for the secret key \"" & "$UPDPW_KEY" & "\". It will be updated in your " & "$OSNAME" & " keychain." ¬
+		default answer "" ¬
+		with hidden answer ¬
+		buttons {"Cancel", "Enter"} ¬
+		default button 2 ¬
+		with title "Update Password" ¬
+		with icon file theLogoPath ¬
+		giving up after 180)
+end tell
+thePassword
+EOT)
+			if [[ $(echo "$NEW_KEYPW" | /usr/bin/grep "User canceled.") != "" ]] ; then
+				exit # ALT: break with CONTINUE="true" && BREAKER="true"
+			fi
+			if [[ "$NEW_KEYPW" == "" ]] ; then
+				notify "Error: no password" "Exiting…"
+				exit # ALT: break with CONTINUE="true" && BREAKER="true"
+			else
+				/usr/bin/security add-generic-password -U -D "application password" -s "minisign-$UPDPW_KEY" -l "minisign-$UPDPW_KEY" -a "$ACCOUNT" -T /usr/bin/security -w "$NEW_KEYPW"
+				CONTINUE="false"
+			fi
 		elif [[ "$SKLIST_CHOICE" == "✖︎ Remove key pair" ]] ; then
 			# choose keys from list to remove from main private key directory
 			MS_METHOD="remove"

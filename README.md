@@ -1,6 +1,6 @@
 ![MSmisc-platform-macos](https://img.shields.io/badge/platform-macOS-lightgrey.svg)
 ![MSmisc-code-shell](https://img.shields.io/badge/code-shell-yellow.svg)
-[![MSmisc-depend-minsign](https://img.shields.io/badge/dependency-minisign%200.6-green.svg)](https://github.com/jedisct1/minisign)
+[![MSmisc-depend-minsign](https://img.shields.io/badge/dependency-minisign%200.7-green.svg)](https://github.com/jedisct1/minisign)
 [![MSmisc-depend-tnote](https://img.shields.io/badge/dependency-terminal--notifier%201.6.3-green.svg)](https://github.com/alloy/terminal-notifier)
 [![MSmisc-license](http://img.shields.io/badge/license-MIT+-blue.svg)](https://github.com/JayBrown/minisign-misc/blob/master/license.md)
 

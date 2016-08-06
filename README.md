@@ -35,10 +35,6 @@ Only necessary if for some reason you want to run this from the shell or another
 ## General Notes
 * My own minisign public key for releases on Github will be created in `${HOME}/Documents/minisign`
 
-## To-do
-- [ ] Switch private keys directory to `${HOME}/.minisign` (pending `minisign` update)
-- [ ] osascript select keys from list; select in Finder only if pub/key directories empty
-
 ## Screengrabs
 ### Signing
 ![ms-sign-screengrab](https://github.com/JayBrown/minisign-misc/blob/master/img/minisign-sign-grab.png)

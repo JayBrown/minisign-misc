@@ -1,11 +1,12 @@
 #!/bin/bash
 
-# minisign-verify v1.7.1 (shell script version)
+# Minisign Miscellanea v1.7.2
+# minisign-verify (shell script version)
 
 LANG=en_US.UTF-8
 export PATH=/usr/local/bin:$PATH
-ACCOUNT=$(who am i | /usr/bin/awk '{print $1}')
-CURRENT_VERSION="1.71"
+ACCOUNT=$(/usr/bin/id -un)
+CURRENT_VERSION="1.72"
 
 # check compatibility
 MACOS2NO=$(/usr/bin/sw_vers -productVersion | /usr/bin/awk -F. '{print $2}')
@@ -44,10 +45,10 @@ pkch () {
 # set notification function
 notify () {
  	if [[ "$NOTESTATUS" == "osa" ]] ; then
-		/usr/bin/osascript -e 'display notification "$2" with title "$ACCOUNT minisign" subtitle "$1"' &>/dev/null
+		/usr/bin/osascript -e 'display notification "$2" with title "minisign [$ACCOUNT]" subtitle "$1"' &>/dev/null
 	elif [[ "$NOTESTATUS" == "tn" ]] ; then
 		"$TERMNOTE_LOC/Contents/MacOS/terminal-notifier" \
-			-title "$ACCOUNT minisign" \
+			-title "minisign [$ACCOUNT]" \
 			-subtitle "$1" \
 			-message "$2" \
 			-appIcon "$ICON" \
@@ -105,7 +106,7 @@ fi
 
 # look for minisign binary & check version (prehashing)
 MINISIGN=$(which minisign 2>&1)
-if [[ "$MINISIGN" == "minisign not found" ]] || [[ "$MINISIGN" == "which: no minisign in"* ]] ; then
+if [[ "$MINISIGN" != "/"*"/minisign" ]] ; then
 	notify "Error: minisign not found" "Please install minisign first"
 	/usr/bin/open "https://jedisct1.github.io/minisign/"
 	exit
@@ -133,8 +134,9 @@ if (( $(echo "$NEWEST_VERSION > $CURRENT_VERSION" | /usr/bin/bc -l) )) ; then
 	/usr/bin/open "https://github.com/JayBrown/minisign-misc/releases/latest"
 fi
 
+VER_FILE="$1" # ALT: for VER_FILE in "$@" ### do
+
 # check for false input
-VER_FILE="$1"
 TARGET_NAME=$(/usr/bin/basename "$VER_FILE")
 if [[ ! -f "$VER_FILE" ]] ; then
 	PATH_TYPE=$(/usr/bin/mdls -name kMDItemContentTypeTree "$VER_FILE" | /usr/bin/grep -e "bundle")
@@ -460,4 +462,4 @@ end tell
 EOT)
 
 # bye
-exit
+exit # ALT: done

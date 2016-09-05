@@ -1,12 +1,12 @@
 #!/bin/bash
 
-# Minisign Miscellanea v1.7.2
+# Minisign Miscellanea v1.7.3
 # minisign-verify (shell script version)
 
 LANG=en_US.UTF-8
 export PATH=/usr/local/bin:$PATH
 ACCOUNT=$(/usr/bin/id -un)
-CURRENT_VERSION="1.72"
+CURRENT_VERSION="1.73"
 
 # check compatibility
 MACOS2NO=$(/usr/bin/sw_vers -productVersion | /usr/bin/awk -F. '{print $2}')
@@ -45,7 +45,11 @@ pkch () {
 # set notification function
 notify () {
  	if [[ "$NOTESTATUS" == "osa" ]] ; then
-		/usr/bin/osascript -e 'display notification "$2" with title "minisign [$ACCOUNT]" subtitle "$1"' &>/dev/null
+		/usr/bin/osascript &>/dev/null << EOT
+tell application "System Events"
+	display notification "$2" with title "minisign [" & "$ACCOUNT" & "]" subtitle "$1"
+end tell
+EOT
 	elif [[ "$NOTESTATUS" == "tn" ]] ; then
 		"$TERMNOTE_LOC/Contents/MacOS/terminal-notifier" \
 			-title "minisign [$ACCOUNT]" \

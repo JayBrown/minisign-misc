@@ -479,9 +479,9 @@ EOT
 		# minisign commands; write password to keychain on success
 		CURRENT_DATE=$(/bin/date)
 		if [[ "$OVERWRITE" != "true" ]] ; then
-			MS_OUT=$((echo "$KEYPAIR_PW";echo "$KEYPAIR_PW") | "$MINISIGN" -G -p "$SIGS_DIR/$KEYPAIR_NAME.pub" -s "$PRIVATE_DIR/$KEYPAIR_NAME.key")
+			MS_OUT=$( (echo "$KEYPAIR_PW";echo "$KEYPAIR_PW") | "$MINISIGN" -G -p "$SIGS_DIR/$KEYPAIR_NAME.pub" -s "$PRIVATE_DIR/$KEYPAIR_NAME.key")
 		elif [[ "$OVERWRITE" == "true" ]] ; then
-			MS_OUT=$((echo "$KEYPAIR_PW";echo "$KEYPAIR_PW") | "$MINISIGN" -G -f -p "$SIGS_DIR/$KEYPAIR_NAME.pub" -s "$PRIVATE_DIR/$KEYPAIR_NAME.key")
+			MS_OUT=$( (echo "$KEYPAIR_PW";echo "$KEYPAIR_PW") | "$MINISIGN" -G -f -p "$SIGS_DIR/$KEYPAIR_NAME.pub" -s "$PRIVATE_DIR/$KEYPAIR_NAME.key")
 		fi
 		if [[ $(echo "$MS_OUT" | /usr/bin/grep "key was saved") != "" ]] ; then
 			NEW_PUBKEY=$(echo "$MS_OUT" | /usr/bin/awk '/-Vm/ {print $5}')

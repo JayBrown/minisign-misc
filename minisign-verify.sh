@@ -22,7 +22,8 @@ tell application "System Events"
 		default button 1 ¬
 		giving up after 60)
 end tell
-EOT)
+EOT
+)
 	exit
 fi
 
@@ -61,7 +62,7 @@ EOT
 }
 
 # look for terminal-notifier
-TERMNOTE_LOC=$(/usr/bin/mdfind "kMDItemCFBundleIdentifier = 'nl.superalloy.oss.terminal-notifier'" 2>/dev/null | /usr/bin/awk 'NR==1')
+TERMNOTE_LOC=$(/usr/bin/mdfind "kMDItemCFBundleIdentifier = 'fr.julienxx.oss.terminal-notifier'" 2>/dev/null | /usr/bin/awk 'NR==1')
 if [[ "$TERMNOTE_LOC" == "" ]] ; then
 	NOTESTATUS="osa"
 else
@@ -173,7 +174,8 @@ tell application "System Events"
 	set theKeyPath to (POSIX path of aKey)
 end tell
 theKeyPath
-EOT)
+EOT
+)
 	if [[ "$MINISIG_LOC" == "" ]] || [[ "$MINISIG_LOC" == "false" ]] ; then
 		exit # ALT: continue
 	elif [[ "$MINISIG_LOC" != *".minisig" ]] ; then
@@ -209,7 +211,8 @@ tell application "System Events"
 	end if
 end tell
 theButton & "@@@" & theReply
-EOT)
+EOT
+)
 	if [[ "$METHOD_ALL" == "" ]] || [[ "$METHOD_ALL" == "false" ]] || [[ "$METHOD_ALL" == "key@@@" ]] ; then
 		exit # ALT: continue
 	fi
@@ -249,7 +252,8 @@ tell application "System Events"
 	set AppleScript's text item delimiters to ""
 end tell
 theResult
-EOT)
+EOT
+)
 		if [[ "$PKLIST_CHOICE" == "" ]] || [[ "$PKLIST_CHOICE" == "false" ]] ; then
 			exit # ALT: continue
 		fi
@@ -283,7 +287,8 @@ tell application "System Events"
 	set theKeyPath to (POSIX path of aKey)
 end tell
 theKeyPath
-EOT)
+EOT
+)
 	if [[ "$PUBKEY_CHOICE" == "" ]] || [[ "$PUBKEY_CHOICE" == "false" ]] ; then
 		exit # ALT: continue
 	fi
@@ -348,22 +353,22 @@ else
 fi
 
 # set info text
-INFO_TXT="■︎■■ File ■■■
+INFO_TXT="■■■ File ■■■
 $TARGET_NAME
 
 ■■■ Size ■■■
 $SIZE MB
 
-■︎■■ Hash (SHA-2, 256 bit) ■■■
+■■■ Hash (SHA-2, 256 bit) ■■■
 $CHECKSUM21
 
-■︎■■ Untrusted minisign comment ■︎■■
+■■■ Untrusted minisign comment ■■■
 $UNTRUSTED_COMMENT
 
-■︎■■ Trusted minisign comment ■︎■■
+■■■ Trusted minisign comment ■■■
 $TRUSTED_COMMENT
 
-■︎■■ Minisign output ■■■
+■■■ Minisign output ■■■
 $MS_OUT_INFO"
 
 # notify
@@ -383,7 +388,8 @@ tell application "System Events"
 		giving up after 180)
 end tell
 theButton
-EOT)
+EOT
+)
 	if [[ "$SAVE_CHOICE" == "Yes" ]] ; then
 		CURRENT_DATE=$(date +%Y%m%d-%H%M%S)
 		# save the public key (manual entry or clipboard)
@@ -401,7 +407,8 @@ tell application "System Events"
 		giving up after 180)
 end tell
 theReply
-EOT)
+EOT
+)
 			if [[ "$NEW_PUBKEY_NAME" == "" ]] ; then
 				NEW_PUBKEY_NAME="minisign"
 			fi
@@ -428,7 +435,8 @@ tell application "System Events"
 		giving up after 180)
 end tell
 theReply
-EOT)
+EOT
+)
 				if [[ $(echo "$NEW_COPY_NAME" | /usr/bin/grep "User canceled.") != "" ]] ; then
 					exit # ALT: continue
 				fi
@@ -463,7 +471,8 @@ tell application "System Events"
 		with icon file theLogoPath ¬
 		giving up after 180)
 end tell
-EOT)
+EOT
+)
 
 # bye
 exit # ALT: done

@@ -22,7 +22,8 @@ tell application "System Events"
 		default button 1 ¬
 		giving up after 60)
 end tell
-EOT)
+EOT
+)
 	exit
 fi
 if [[ "$MACOS2NO" -ge 12 ]] ; then
@@ -52,7 +53,7 @@ EOT
 }
 
 # look for terminal-notifier
-TERMNOTE_LOC=$(/usr/bin/mdfind "kMDItemCFBundleIdentifier = 'nl.superalloy.oss.terminal-notifier'" 2>/dev/null | /usr/bin/awk 'NR==1')
+TERMNOTE_LOC=$(/usr/bin/mdfind "kMDItemCFBundleIdentifier = 'fr.julienxx.oss.terminal-notifier'" 2>/dev/null | /usr/bin/awk 'NR==1')
 if [[ "$TERMNOTE_LOC" == "" ]] ; then
 	NOTESTATUS="osa"
 else
@@ -198,7 +199,8 @@ tell application "System Events"
 	set AppleScript's text item delimiters to ""
 end tell
 theResult
-EOT)
+EOT
+)
 		if [[ "$SKLIST_CHOICE" == "" ]] || [[ "$SKLIST_CHOICE" == "false" ]] ; then
 			exit # ALT: break with CONTINUE="true" && BREAKER="true"
 		fi
@@ -226,7 +228,8 @@ tell application "System Events"
 	set AppleScript's text item delimiters to ""
 end tell
 theResult
-EOT)
+EOT
+)
 				if [[ "$UPDPW_KEY" == "" ]] || [[ "$UPDPW_KEY" == "false" ]] ; then
 					exit # ALT: break with CONTINUE="true" && BREAKER="true"
 				fi
@@ -248,7 +251,8 @@ tell application "System Events"
 		giving up after 180)
 end tell
 thePassword
-EOT)
+EOT
+)
 			if [[ $(echo "$NEW_KEYPW" | /usr/bin/grep "User canceled.") != "" ]] ; then
 				exit # ALT: break with CONTINUE="true" && BREAKER="true"
 			fi
@@ -277,7 +281,8 @@ tell application "System Events"
 	set AppleScript's text item delimiters to ""
 end tell
 theResult
-EOT)
+EOT
+)
 				if [[ "$REMOVAL_CHOICE" == "" ]] || [[ "$REMOVAL_CHOICE" == "false" ]] ; then
 					exit # ALT: break with CONTINUE="true" && BREAKER="true"
 				fi
@@ -310,7 +315,8 @@ tell application "System Events"
 	set theKeyPath to (POSIX path of aKey)
 end tell
 theKeyPath
-EOT)
+EOT
+)
 				if [[ "$PUBKEY_SEARCH" == "" ]] || [[ "$PUBKEY_SEARCH" == "false" ]] ; then
 					exit # ALT: break with CONTINUE="true" && BREAKER="true"
 				fi
@@ -343,7 +349,8 @@ tell application "System Events"
 		giving up after 180)
 end tell
 initialChoice
-EOT)
+EOT
+)
 		if [[ "$INITIAL" == "New" ]] ; then
 			MS_METHOD="new"
 			CONTINUE="true"
@@ -380,7 +387,8 @@ tell application "System Events"
 		giving up after 180)
 end tell
 thePassword
-EOT)
+EOT
+)
 		if [[ "$KEYPAIR_PW" == "" ]] || [[ "$KEYPAIR_PW" == "false" ]] ; then
 			notify "Error: no password" "Exiting…"
 			exit # ALT: continue
@@ -421,7 +429,8 @@ tell application "System Events"
 		giving up after 180)
 end tell
 theButton & "@DELIM@" & theReply
-EOT)
+EOT
+)
 		if [[ "$KEYPAIR_NEW" == "" ]] || [[ "$KEYPAIR_NEW" == "false" ]] || [[ "$KEYPAIR_NEW" == "@DELIM@" ]] ; then
 			exit # ALT: break with CONTINUE="true" && BREAKER="true"
 		fi
@@ -455,7 +464,8 @@ tell application "System Events"
 		giving up after 180)
 end tell
 theButton & "@DELIM@" & thePassword
-EOT)
+EOT
+)
 		if [[ "$KEYPW_ALL" == "" ]] || [[ "$KEYPW_ALL" == "false" ]] || [[ "$KEYPW_ALL" == "@DELIM@" ]] ; then
 			exit # ALT: break with CONTINUE="true" && BREAKER="true"
 		fi
@@ -469,9 +479,9 @@ EOT)
 		# minisign commands; write password to keychain on success
 		CURRENT_DATE=$(/bin/date)
 		if [[ "$OVERWRITE" != "true" ]] ; then
-			MS_OUT=$((echo "$KEYPAIR_PW";echo "$KEYPAIR_PW") | "$MINISIGN" -G -p "$SIGS_DIR/$KEYPAIR_NAME.pub" -s "$PRIVATE_DIR/$KEYPAIR_NAME.key")
+			MS_OUT=$( (echo "$KEYPAIR_PW";echo "$KEYPAIR_PW") | "$MINISIGN" -G -p "$SIGS_DIR/$KEYPAIR_NAME.pub" -s "$PRIVATE_DIR/$KEYPAIR_NAME.key")
 		elif [[ "$OVERWRITE" == "true" ]] ; then
-			MS_OUT=$((echo "$KEYPAIR_PW";echo "$KEYPAIR_PW") | "$MINISIGN" -G -f -p "$SIGS_DIR/$KEYPAIR_NAME.pub" -s "$PRIVATE_DIR/$KEYPAIR_NAME.key")
+			MS_OUT=$( (echo "$KEYPAIR_PW";echo "$KEYPAIR_PW") | "$MINISIGN" -G -f -p "$SIGS_DIR/$KEYPAIR_NAME.pub" -s "$PRIVATE_DIR/$KEYPAIR_NAME.key")
 		fi
 		if [[ $(echo "$MS_OUT" | /usr/bin/grep "key was saved") != "" ]] ; then
 			NEW_PUBKEY=$(echo "$MS_OUT" | /usr/bin/awk '/-Vm/ {print $5}')
@@ -506,7 +516,8 @@ tell application "System Events"
 	set theKeyPath to (POSIX path of aKey)
 end tell
 theKeyPath
-EOT)
+EOT
+)
 	if [[ "$SIGNING_KEY" == "" ]] || [[ "$SIGNING_KEY" == "false" ]] ; then
 		exit # ALT: continue
 	fi
@@ -538,7 +549,8 @@ tell application "System Events"
 	set theKeyPath to (POSIX path of aKey)
 end tell
 theKeyPath
-EOT)
+EOT
+)
 		if [[ "$LOCATE_PUBKEY" == "" ]] || [[ "$LOCATE_PUBKEY" == "false" ]] ; then
 			exit # ALT: continue
 		fi
@@ -564,7 +576,8 @@ tell application "System Events"
 		giving up after 180)
 end tell
 thePassword
-EOT)
+EOT
+)
 		if [[ "$KEYPAIR_PW" == "" ]] || [[ "$KEYPAIR_PW" == "false" ]] ; then
 			notify "Error: no password" "Exiting…"
 			exit # ALT: continue
@@ -609,7 +622,8 @@ tell application "System Events"
 		giving up after 180)
 end tell
 theComment
-EOT)
+EOT
+)
 if [[ "$TRUSTED" == *"User canceled"* ]] ; then
 	exit # ALT: continue
 fi
@@ -628,7 +642,8 @@ tell application "System Events"
 		giving up after 180)
 end tell
 theComment
-EOT)
+EOT
+)
 if [[ "$UNTRUSTED" == *"User canceled"* ]] ; then
 	exit # ALT: continue
 fi
@@ -690,19 +705,19 @@ if [[ "$PREHASH" == "false" ]] ; then
 elif [[ "$PREHASH" == "true" ]] ; then
 	PREHASH_INFO="not compatible with OpenBSD signify"
 fi
-INFO_TXT="■︎■■ File ■■■
+INFO_TXT="■■■ File ■■■
 $TARGET_NAME
 
 ■■■ Size ■■■
 $SIZE MB
 
-■︎■■ Hash (SHA-2, 256 bit) ■■■
+■■■ Hash (SHA-2, 256 bit) ■■■
 $CHECKSUM21
 
-■︎■■ Minisign public key ■■■
+■■■ Minisign public key ■■■
 $PUBKEY
 
-■︎■■ Prehashing ■︎■■
+■■■ Prehashing ■■■
 $PREHASH
 [$PREHASH_INFO]
 
@@ -728,7 +743,8 @@ tell application "System Events"
 		with icon file theLogoPath ¬
 		giving up after 180)
 end tell
-EOT)
+EOT
+)
 
 # bye
 exit # ALT: done
